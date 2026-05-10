@@ -1,3 +1,13 @@
+## 2.0.1 - 2026-05-05
+- fix: SSE connection now pauses when app is backgrounded and resumes when app returns to foreground. Prevents unnecessary battery drain.
+
+## 2.0.0 - 2026-05-04
+- Add `FlushbarRemote` for optional remote notification support via FlushKit (api.flushkit.dev)
+- Add `FlushbarRemoteEvent` data class for raw event access
+- Add `lib/another_flushbar.dart` convenience barrel export
+- Add `http: ^1.2.0` dependency
+- No breaking changes to existing API
+
 ## 1.12.32 - 2025-09-08
 - Prevent crashes from null checks in Flushbar route lifecycle (isDismissed, isAppearing, isHiding)
 ## 1.12.31 - 2025-09-01
