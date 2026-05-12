@@ -1,3 +1,16 @@
+## [2.1.0] - 2026-05-12
+### Added
+- Offline delivery queue: notifications sent while the app is closed
+  or disconnected are automatically replayed on the next SSE connection
+- Deduplication: replayed notifications are silently dropped if already
+  shown in the current device session
+- `since` parameter sent on every SSE connection, allowing the server
+  to replay only missed notifications
+
+### Internal
+- `shared_preferences` dependency added for `lastSeen` and `seenIds`
+  persistence across app restarts
+
 ## 2.0.1 - 2026-05-05
 - fix: SSE connection now pauses when app is backgrounded and resumes when app returns to foreground. Prevents unnecessary battery drain.
 

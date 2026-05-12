@@ -38,7 +38,7 @@ class _RemoteHomePageState extends State<RemoteHomePage> {
     // route before we start receiving events.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FlushbarRemote.init(
-        apiKey: 'fk_live_66964da5235433a8fb272fbb11d2c16cf62b952ef501a0379fdaaf53fd5a438d',
+        apiKey: 'fk_live_afe62c2ac7c392252878257fd556b3282ac12dc9cf9f716a28afb937eb892983',
         context: context,
       );
 

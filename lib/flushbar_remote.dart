@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'flushbar.dart';
 
@@ -88,6 +89,10 @@ class FlushbarRemote with WidgetsBindingObserver {
   static http.Client? _client;
   static Timer? _reconnectTimer;
 
+  static SharedPreferences? _prefs;
+  static int _lastSeen = 0;
+  static List<String> _seenIds = [];
+
   // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
@@ -119,6 +124,11 @@ class FlushbarRemote with WidgetsBindingObserver {
     _apiKey = apiKey;
     _context = context;
     _disposed = false;
+
+    _prefs = await SharedPreferences.getInstance();
+    _lastSeen = _prefs!.getInt('fk_last_seen') ?? 0;
+    _seenIds = _prefs!.getStringList('fk_seen_ids') ?? [];
+
     WidgetsBinding.instance.addObserver(_instance);
     _connect();
   }
@@ -173,7 +183,7 @@ class FlushbarRemote with WidgetsBindingObserver {
     _client = http.Client();
 
     final uri = Uri.parse(
-      'https://api.flushkit.dev/v1/listen?apiKey=${Uri.encodeComponent(_apiKey!)}',
+      'https://api.flushkit.dev/v1/listen?apiKey=${Uri.encodeComponent(_apiKey!)}&since=$_lastSeen',
     );
 
     final request = http.Request('GET', uri)
@@ -224,6 +234,9 @@ class FlushbarRemote with WidgetsBindingObserver {
     try {
       final map = jsonDecode(rawJson) as Map<String, dynamic>;
 
+      final notificationId = map['notificationId'] as String?;
+      if (notificationId != null && _seenIds.contains(notificationId)) return;
+
       final title = map['title'] as String?;
       final message = (map['message'] as String?) ?? '';
       final bg = _parseColor(map['backgroundColor'] as String? ?? '#303030');
@@ -242,6 +255,16 @@ class FlushbarRemote with WidgetsBindingObserver {
 
       _eventController.add(event);
       _showFlushbar(event);
+
+      if (notificationId != null) {
+        _seenIds.add(notificationId);
+        if (_seenIds.length > 100) {
+          _seenIds = _seenIds.sublist(_seenIds.length - 100);
+        }
+        _lastSeen = DateTime.now().millisecondsSinceEpoch;
+        _prefs?.setStringList('fk_seen_ids', _seenIds);
+        _prefs?.setInt('fk_last_seen', _lastSeen);
+      }
     } catch (_) {
       // Malformed payload — skip silently so a bad message can't crash the app.
     }
