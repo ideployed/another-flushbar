@@ -1,4 +1,4 @@
-## [2.1.0] - 2026-05-12
+## 2.1.0 - 2026-05-12
 ### Added
 - Offline delivery queue: notifications sent while the app is closed
   or disconnected are automatically replayed on the next SSE connection
