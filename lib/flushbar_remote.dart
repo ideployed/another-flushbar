@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -457,9 +456,16 @@ class FlushbarRemote with WidgetsBindingObserver {
           width: 40,
           height: 40,
           child: ClipOval(
-            child: CachedNetworkImage(
-              imageUrl: iconName,
+            child: Image.network(
+              iconName,
+              width: 40,
+              height: 40,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => const Icon(
+                Icons.error_outline,
+                color: Colors.white,
+                size: 28,
+              ),
             ),
           ),
         );

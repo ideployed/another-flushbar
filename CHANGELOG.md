@@ -1,3 +1,6 @@
+## 2.2.4 - 2026-05-15
+- replace cached_network_image with Image.network for platform compatibility
+
 ## 2.2.3 - 2026-05-15
 - add pub.dev screenshots
 
