@@ -1,3 +1,7 @@
+## 2.2.1 - 2026-05-15
+- update the TextButton in _showFlushbar
+  to have an explicit white text style
+
 ## 2.2.0 - 2026-05-15
 
 ### Added

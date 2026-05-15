@@ -364,6 +364,12 @@ class FlushbarRemote with WidgetsBindingObserver {
           }
           flushbar?.dismiss();
         },
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.white,
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         child: Text(event.actionLabel!),
       );
     } else if (event.persistent) {
