@@ -1,3 +1,6 @@
+## 2.2.2 - 2026-05-15
+- bring back icon maps ~110 Material icon names
+
 ## 2.2.1 - 2026-05-15
 - update the TextButton in _showFlushbar
   to have an explicit white text style
