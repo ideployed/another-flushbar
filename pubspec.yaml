@@ -1,6 +1,6 @@
 name: another_flushbar
 description: A flexible widget for user notification. Customize your text, button, duration, animations and much more. For Android devs, it is made to replace Snackbars and Toasts.
-version: 2.2.2
+version: 2.2.3
 homepage: https://flushkit.dev
 issue_tracker: https://github.com/ideployed/another-flushbar/issues
 
@@ -56,3 +56,13 @@ flutter:
   #
   # For details regarding fonts in packages, see
   # https://flutter.dev/custom-fonts/#from-packages
+
+screenshots:
+  - description: 'Basic notification at bottom of screen'
+    path: screenshots/basic.png
+  - description: 'Notification with icon and title'
+    path: screenshots/icon_title.png
+  - description: 'Notification with action button'
+    path: screenshots/action_button.png
+  - description: 'Persistent notification with close button'
+    path: screenshots/persistent.png
