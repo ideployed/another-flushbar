@@ -1,9 +1,21 @@
-## 2.2.1 - 2026-05-14
+## 2.2.0 - 2026-05-15
 
-### Changed
-- Expanded icon map from 7 to ~110 Material icon names
-- Icon picker in dashboard now searchable with full Material Icons
-  font — no more guessing icon names
+### Added
+- Action button: server can now push a button label and URL/deep-link
+  with each notification. Tapping opens the URL or navigates to the
+  named route and dismisses the flushbar.
+- Icon support: server can specify a Material icon name (info, warning,
+  error, success, star, notifications) or a full image URL. Network
+  images are loaded via cached_network_image with a circular clip.
+- Persistent mode: server can mark a notification as persistent —
+  no auto-dismiss, no swipe. A close button is injected automatically.
+  If an action button is also present, swipe-to-dismiss is enabled as
+  a fallback.
+- Added icon maps ~110 Material icon names
+
+### Dependencies
+- Added url_launcher ^6.3.0
+- Added cached_network_image ^3.4.0
 
 ## 2.1.0 - 2026-05-12
 ### Added
