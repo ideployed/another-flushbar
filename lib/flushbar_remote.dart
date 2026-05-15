@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'flushbar.dart';
 
@@ -25,12 +27,28 @@ class FlushbarRemoteEvent {
   /// [FlushbarPosition.BOTTOM] of the screen.
   final FlushbarPosition position;
 
+  /// Optional label for an action button, e.g. "View" or "Retry".
+  final String? actionLabel;
+
+  /// Deep link or URL opened when the action button is tapped.
+  final String? actionUrl;
+
+  /// A Material icon name (e.g. "warning") or an https:// image URL.
+  final String? iconName;
+
+  /// When true the notification stays until the user dismisses it manually.
+  final bool persistent;
+
   const FlushbarRemoteEvent({
     this.title,
     required this.message,
     required this.backgroundColor,
     required this.duration,
     required this.position,
+    this.actionLabel,
+    this.actionUrl,
+    this.iconName,
+    this.persistent = false,
   });
 }
 
@@ -244,6 +262,10 @@ class FlushbarRemote with WidgetsBindingObserver {
       final posStr = (map['position'] as String?)?.toUpperCase();
       final position =
           posStr == 'TOP' ? FlushbarPosition.TOP : FlushbarPosition.BOTTOM;
+      final actionLabel = map['actionLabel'] as String?;
+      final actionUrl = map['actionUrl'] as String?;
+      final iconName = map['iconName'] as String?;
+      final persistent = (map['persistent'] as bool?) ?? false;
 
       final event = FlushbarRemoteEvent(
         title: title,
@@ -251,6 +273,10 @@ class FlushbarRemote with WidgetsBindingObserver {
         backgroundColor: bg,
         duration: Duration(seconds: secs),
         position: position,
+        actionLabel: actionLabel,
+        actionUrl: actionUrl,
+        iconName: iconName,
+        persistent: persistent,
       );
 
       _eventController.add(event);
@@ -270,16 +296,96 @@ class FlushbarRemote with WidgetsBindingObserver {
     }
   }
 
+  static const Map<String, IconData> _iconMap = {
+    'info': Icons.info_outline,
+    'warning': Icons.warning_amber_outlined,
+    'error': Icons.error_outline,
+    'success': Icons.check_circle_outline,
+    'check_circle': Icons.check_circle_outline,
+    'star': Icons.star_outline,
+    'notifications': Icons.notifications_outlined,
+  };
+
   static void _showFlushbar(FlushbarRemoteEvent event) {
     final ctx = _context;
     if (ctx == null || _disposed) return;
-    Flushbar(
+
+    // Holds a reference so buttons can call dismiss() on the same instance.
+    Flushbar? flushbar;
+
+    // --- ICON ---
+    Widget? iconWidget;
+    bool iconPulse = false;
+    final iconName = event.iconName;
+    if (iconName != null) {
+      if (iconName.startsWith('http')) {
+        iconWidget = SizedBox(
+          width: 40,
+          height: 40,
+          child: ClipOval(
+            child: CachedNetworkImage(
+              imageUrl: iconName,
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+        iconPulse = false;
+      } else {
+        final iconData = _iconMap[iconName] ?? Icons.notifications;
+        iconWidget = Icon(iconData, color: Colors.white, size: 28);
+        iconPulse = true;
+      }
+    }
+
+    // --- DURATION & DISMISSIBILITY ---
+    Duration? duration = event.duration;
+    bool isDismissible = true;
+
+    if (event.persistent) {
+      duration = null;
+      isDismissible = event.actionLabel != null;
+    }
+
+    // --- MAIN BUTTON ---
+    Widget? mainButton;
+    if (event.actionLabel != null) {
+      mainButton = TextButton(
+        onPressed: () async {
+          final url = event.actionUrl;
+          if (url != null) {
+            if (url.startsWith('http')) {
+              await launchUrl(Uri.parse(url));
+            } else {
+              final context = _context;
+              if (context != null) {
+                Navigator.pushNamed(context, url);
+              }
+            }
+          }
+          flushbar?.dismiss();
+        },
+        child: Text(event.actionLabel!),
+      );
+    } else if (event.persistent) {
+      mainButton = IconButton(
+        icon: const Icon(Icons.close, color: Colors.white),
+        onPressed: () => flushbar?.dismiss(),
+      );
+    }
+
+    flushbar = Flushbar(
       title: event.title,
       message: event.message,
       backgroundColor: event.backgroundColor,
-      duration: event.duration,
+      duration: duration,
+      isDismissible: isDismissible,
       flushbarPosition: event.position,
-    ).show(ctx);
+      icon: iconWidget,
+      shouldIconPulse: iconPulse,
+      mainButton: mainButton,
+    );
+
+    flushbar.show(ctx);
   }
 
   /// Parses a CSS hex colour string (`"#FF5733"` or `"FF5733"`) into a

@@ -1,3 +1,10 @@
+## 2.2.1 - 2026-05-14
+
+### Changed
+- Expanded icon map from 7 to ~110 Material icon names
+- Icon picker in dashboard now searchable with full Material Icons
+  font — no more guessing icon names
+
 ## 2.1.0 - 2026-05-12
 ### Added
 - Offline delivery queue: notifications sent while the app is closed
