@@ -1,3 +1,6 @@
+## 2.2.3 - 2026-05-15
+- add pub.dev screenshots
+
 ## 2.2.2 - 2026-05-15
 - bring back icon maps ~110 Material icon names
 
