@@ -376,6 +376,8 @@ Flushbar(
   progressIndicatorController: _controller,
   progressIndicatorBackgroundColor: Colors.grey[800],
 )..show(context);
+
+// You own the controller: dispose it yourself (e.g. in your State.dispose()).
 ```
 
 ---

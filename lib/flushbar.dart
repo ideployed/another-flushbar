@@ -132,7 +132,8 @@ class Flushbar<T> extends StatefulWidget {
   final bool showProgressIndicator;
 
   /// An optional [AnimationController] when you want to control the progress of your [LinearProgressIndicator].
-  /// You are responsible for controlling the progress
+  /// You are responsible for controlling the progress and for disposing the
+  /// controller; the flushbar does not dispose it.
   final AnimationController? progressIndicatorController;
 
   /// A [LinearProgressIndicator] configuration parameter.
@@ -312,6 +313,7 @@ class _FlushbarState<K extends Object?> extends State<Flushbar<K>>
   late Completer<Size> _boxHeightCompleter;
 
   CurvedAnimation? _progressAnimation;
+  CurvedAnimation? _fadeCurve;
 
   @override
   void initState() {
@@ -343,8 +345,9 @@ class _FlushbarState<K extends Object?> extends State<Flushbar<K>>
 
   @override
   void dispose() {
+    _fadeCurve?.dispose();
     _fadeController?.dispose();
-    widget.progressIndicatorController?.dispose();
+    _progressAnimation?.dispose();
 
     _focusAttachment.detach();
     _focusNode!.dispose();
@@ -375,12 +378,12 @@ class _FlushbarState<K extends Object?> extends State<Flushbar<K>>
   void _configurePulseAnimation() {
     _fadeController =
         AnimationController(vsync: this, duration: _pulseAnimationDuration);
-    _fadeAnimation = Tween(begin: _initialOpacity, end: _finalOpacity).animate(
-      CurvedAnimation(
-        parent: _fadeController!,
-        curve: Curves.linear,
-      ),
+    _fadeCurve = CurvedAnimation(
+      parent: _fadeController!,
+      curve: Curves.linear,
     );
+    _fadeAnimation =
+        Tween(begin: _initialOpacity, end: _finalOpacity).animate(_fadeCurve!);
 
     _fadeController!.addStatusListener((status) {
       if (status == AnimationStatus.completed) {

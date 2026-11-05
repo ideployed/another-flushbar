@@ -1,3 +1,10 @@
+## 2.3.0 - 2026-11-05
+- fix CurvedAnimation leaks in FlushbarRoute (slide, blur, color)
+  and Flushbar (icon pulse, progress indicator)
+- fix OverlayEntry leak when a flushbar is dismissed
+- **behaviour change:** Flushbar no longer disposes
+  `progressIndicatorController`. The caller owns it and must dispose it.
+
 ## 2.2.4 - 2026-05-15
 - replace cached_network_image with Image.network for platform compatibility
 

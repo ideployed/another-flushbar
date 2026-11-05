@@ -13,6 +13,11 @@ class FlushbarRoute<T> extends OverlayRoute<T> {
 
   Animation<double>? _filterBlurAnimation;
   Animation<Color?>? _filterColorAnimation;
+
+  // Curves created by the base create*Animation() methods; disposed in dispose().
+  CurvedAnimation? _alignmentCurve;
+  CurvedAnimation? _filterBlurCurve;
+  CurvedAnimation? _filterColorCurve;
   Alignment? _initialAlignment;
   Alignment? _endAlignment;
   bool _wasDismissedBySwipe = false;
@@ -253,45 +258,39 @@ class FlushbarRoute<T> extends OverlayRoute<T> {
     assert(!_transitionCompleter.isCompleted,
         'Cannot reuse a $runtimeType after disposing it.');
     assert(_controller != null);
-    return AlignmentTween(begin: _initialAlignment, end: _endAlignment).animate(
-      CurvedAnimation(
-        parent: _controller!,
-        curve: flushbar.forwardAnimationCurve,
-        reverseCurve: flushbar.reverseAnimationCurve,
-      ),
+    _alignmentCurve = CurvedAnimation(
+      parent: _controller!,
+      curve: flushbar.forwardAnimationCurve,
+      reverseCurve: flushbar.reverseAnimationCurve,
     );
+    return AlignmentTween(begin: _initialAlignment, end: _endAlignment)
+        .animate(_alignmentCurve!);
   }
 
   Animation<double>? createBlurFilterAnimation() {
     if (flushbar.routeBlur == null) return null;
 
-    return Tween(begin: 0.0, end: flushbar.routeBlur).animate(
-      CurvedAnimation(
-        parent: _controller!,
-        curve: const Interval(
-          0.0,
-          0.35,
-          curve: Curves.easeInOutCirc,
-        ),
-      ),
-    );
+    _filterBlurCurve = _createFilterCurve();
+    return Tween(begin: 0.0, end: flushbar.routeBlur)
+        .animate(_filterBlurCurve!);
   }
 
   Animation<Color?>? createColorFilterAnimation() {
     if (flushbar.routeColor == null) return null;
 
+    _filterColorCurve = _createFilterCurve();
     return ColorTween(begin: Colors.transparent, end: flushbar.routeColor)
-        .animate(
-      CurvedAnimation(
+        .animate(_filterColorCurve!);
+  }
+
+  CurvedAnimation _createFilterCurve() => CurvedAnimation(
         parent: _controller!,
         curve: const Interval(
           0.0,
           0.35,
           curve: Curves.easeInOutCirc,
         ),
-      ),
-    );
-  }
+      );
 
   //copy of `routes.dart`
   void _handleStatusChanged(AnimationStatus status) {
@@ -321,11 +320,8 @@ class FlushbarRoute<T> extends OverlayRoute<T> {
         if (_onStatusChanged != null) _onStatusChanged!(currentStatus);
 
         if (!isCurrent) {
+          // Entries stay in the list so OverlayRoute.dispose() disposes them.
           navigator!.finalizeRoute(this);
-          if (overlayEntries.isNotEmpty) {
-            overlayEntries.clear();
-          }
-          assert(overlayEntries.isEmpty);
         }
         break;
     }
@@ -435,6 +431,9 @@ class FlushbarRoute<T> extends OverlayRoute<T> {
   void dispose() {
     assert(!_transitionCompleter.isCompleted,
         'Cannot dispose a $runtimeType twice.');
+    _alignmentCurve?.dispose();
+    _filterBlurCurve?.dispose();
+    _filterColorCurve?.dispose();
     _controller?.dispose();
     _transitionCompleter.complete(_result);
     _timer?.cancel();
